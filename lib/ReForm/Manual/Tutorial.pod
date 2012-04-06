@@ -1,24 +1,25 @@
-# just to make PodWeaver happy at the moment
-package ReForm::Manual::Tutorial;
+package ReForm::Manual::Tutorial; # make PodWeaver happy
 
-=pod
-
-=head1 NAME
-
-ReForm::Manual::Tutorial - Introduction to and tutorial on using ReForm
+1;
+# ABSTRACT: Introduction and tutorial on using ReForm
 
 =head1 OVERVIEW
 
 This document is meant to be first reading for people wanting to know and use
 ReForm.
 
+
 =head1 INTRODUCTION
+
 
 =head1 FORM SPECIFICATION
 
+
 =head1 RENDERING IN CONSOLE
 
+
 =head2 RENDERING IN HTML
+
 
 =head2 VARIOUS EXAMPLES
 

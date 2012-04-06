@@ -1,0 +1,108 @@
+* [2012-04-05 Thu] an example
+** spec
+
+: my $spec = {
+:     fields => [
+:         {
+:             name => 'name',
+:             summary => 'Full name',
+:             "summary.alt.lang.id_ID" => 'Nama lengkap',
+:             schema => ['str*'=>{max_len => 60}],
+:         },
+:         {
+:             name => 'email',
+:             schema => ['str*'=>{max_len => 255}],
+:             confirm => 1,
+:         },
+:         {
+:             name => 'password',
+:             schema => 'str*',
+:             confirm => 1,
+:         },
+:         {
+:             name => 'sex',
+:             schema => ['str'=>{in=>['M','F'}}],
+:         },
+:     },
+: };
+
+** sample data
+
+: {name=>'Steven Haryanto', email=>'stevenharyanto@gmail.com', password=>'mypass', sex=>'M'}
+
+** sample HTML rendering
+
+jika tidak diassign, renderer otomatis memilihkan control yang kira2x cocok
+untuk form field. contoh utk str kita pakai input field biasa, kecuali kalo ada
+clause 'in' kita pilihkan SELECT atau RADIO. kalau namanya
+/\b(pass(word|wd)|pwd)\b/i bisa kita pilihkan password field by default.
+
+tapi kita juga bisa assign specifically, mis kita ingin TEXTAREA. di spec ada
+key 'html' utk html renderer.
+
+: html => {
+:     # selector: specific field
+:     fields => {
+:
+:     },
+:     # selector: field whose name matching some regex
+:     field_match => {
+:
+:     },
+:     # selector: sah (or CSS-like?)
+:     fields_match => {
+:         ''
+:     },
+: }
+
+*** skin/template/apa ya namanya
+
+*** code
+my $html = $form->render('HTML', {form_id=>'foo', lang=>'id_ID', opts=>...}); # method GET/POST,
+*** sample result
+<form name=foo>
+
+  <div class=control>
+    <span class=label>Nama lengkap</span>
+    <span class=element><input name=name maxlength=60/></span>
+  </div>
+
+  <div class=control>
+    <span class=label>Alamat email</span>
+    <span class=element><input name=email maxlength=255/></span>
+  </div>
+
+  <div class=control>
+    <span class=label>Konfirmasi alamat email</span>
+    <span class=label>Masukkan kembali alamat email untuk konfirmasi</span>
+    <span class=element><input name="email.confirm" maxlength=255/></span>
+  </div>
+
+  <div class=control>
+    <span class=label>Password</span>
+    <span class=element><input name=password type=password/></span>
+  </div>
+
+  <div class=control>
+    <span class=label>Konfirmasi password</span>
+    <span class=label>Masukkan kembali alamat email untuk konfirmasi</span>
+    <span class=element><input name="password.confirm" type=password/></span>
+  </div>
+
+  <div class=control>
+    <label for=sex><input type=radio name=sex value="M">Pria</label>
+    <label for=sex><input type=radio name=sex value="F">Wanita</label>
+  </div>
+</form>
+
+** sample Console rendering
+
+*** skin/template/apa ya namanya
+
+*** code
+$form->render('Console', {...});
+*** result
+
+# result data
+$n
+
