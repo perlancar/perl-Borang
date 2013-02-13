@@ -1,15 +1,20 @@
-package ReForm::Renderer;
+package ReForm::Control;
 
 use 5.010;
 use Moo;
 
 # VERSION
 
-has main => (is => 'rw');
+has renderer => (is => 'rw');
 
 has controls => (is => 'rw', default => sub { {} });
 
 our $control_re = qr/\A[A-Za-z_]\w*\z/;
+
+sub field {
+    my ($self, $name) = @_;
+    $self->renderer->main->form->{fields}{$name};
+}
 
 sub get_control {
     my ($self, $name) = @_;
@@ -29,25 +34,31 @@ sub get_control {
 }
 
 1;
-# ABSTRACT: Base class for form renderer
+# ABSTRACT: Base class for form control
 
 =for Pod::Coverage ^()$
 
 =head1 ATTRIBUTES
 
-=head2 main => OBJ
+=head2 renderer => OBJ
 
-References the main ReForm object.
-
-=head2 controls => HASH
-
-A mapping between control names and objects, for caching.
+References the form renderer object.
 
 
 =head1 METHODS
 
-=head2 get_control($name) => OBJ
+=head2 render(%args) => ANY
 
-Get control (widget) object.
+Render control.
+
+Arguments:
+
+=over
+
+=item * field => HASH
+
+Field specification.
+
+=back
 
 =cut
