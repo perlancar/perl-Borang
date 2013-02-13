@@ -2,26 +2,26 @@
 ** spec
 
 : my $spec = {
-:     fields => [
-:         {
-:             name => 'name',
+:     fields => {
+:         name => {
 :             summary => 'Full name',
 :             "summary.alt.lang.id_ID" => 'Nama lengkap',
 :             schema => ['str*'=>{max_len => 60}],
+:             pos => $i=0,
 :         },
-:         {
-:             name => 'email',
+:         email => {
 :             schema => ['str*'=>{max_len => 255}],
-:             confirm => 1,
+:             pos => ++$i,
 :         },
-:         {
-:             name => 'password',
+:         password => {
 :             schema => 'str*',
-:             confirm => 1,
+:             confirm => 1, # create a confirmation field after this field
+:             pos => ++$i,
 :         },
 :         {
 :             name => 'sex',
 :             schema => ['str'=>{in=>['M','F'}}],
+:             pos => ++$i,
 :         },
 :     },
 : };
