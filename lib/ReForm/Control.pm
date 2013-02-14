@@ -6,31 +6,13 @@ use Moo;
 # VERSION
 
 has renderer => (is => 'rw');
-
-has controls => (is => 'rw', default => sub { {} });
+has name     => (is => 'rw');
 
 our $control_re = qr/\A[A-Za-z_]\w*\z/;
 
 sub field {
-    my ($self, $name) = @_;
-    $self->renderer->main->form->{fields}{$name};
-}
-
-sub get_control {
-    my ($self, $name) = @_;
-
-    return $self->controls->{$name} if $self->controls->{$name};
-
-    die "Invalid control name `$name`" unless $name =~ $control_re;
-    my $module = ref($self) . "::Control::$name";
-    if (!eval "require $module; 1") {
-        die "Can't load control module $module".($@ ? ": $@" : "");
-    }
-
-    my $obj = $module->new(renderer => $self);
-    $self->controls->{$name} = $obj;
-
-    return $obj;
+    my ($self) = @_;
+    $self->renderer->main->form->{fields}{ $self->name };
 }
 
 1;
@@ -44,6 +26,9 @@ sub get_control {
 
 References the form renderer object.
 
+=head2 name => STR
+
+Field name.
 
 =head1 METHODS
 

@@ -22,7 +22,7 @@ sub get_control {
         die "Can't load control module $module".($@ ? ": $@" : "");
     }
 
-    my $obj = $module->new(renderer => $self);
+    my $obj = $module->new(renderer => $self, name => $name);
     $self->controls->{$name} = $obj;
 
     return $obj;
