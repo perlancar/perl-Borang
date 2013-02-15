@@ -8,8 +8,8 @@ use Moo;
 
 our $renderer_re = qr/\A[A-Za-z_]\w*\z/;
 
-has form      => (is => 'ro');
-has parent    => (is => 'ro');
+has spec      => (is => 'ro');
+has parent    => (is => 'rw'); # for subform
 has renderers => (is => 'rw');
 
 sub BUILD {
@@ -17,14 +17,14 @@ sub BUILD {
 
     my ($self, $args) = @_;
 
-    # normalize fields' schemas. currently this replaces in-place.
-    unless ($args->{form_is_normalized}) {
-        $self->{form}{fields} //= {};
-        for my $fn (keys %{ $self->{form}{fields} }) {
-            next unless $self->{form}{fields}{$fn}{schema};
-            $self->{form}{fields}{$fn}{schema} = Data::Sah::normalize_schema(
-                $self->{form}{fields}{$fn}{schema}
-            );
+    # normalize fields' schemas.
+    unless ($args->{spec_is_normalized}) {
+        $self->{spec}{fields} //= {};
+        my $ff = $self->{spec}{fields};
+        for my $fn (keys %$ff) {
+            next unless $ff->{$fn}{schema};
+            $ff->{$fn}{schema} = Data::Sah::normalize_schema(
+                $ff->{$fn}{schema});
         }
     }
 
@@ -74,9 +74,11 @@ sub list_field_names {
 
 =head1 SYNOPSIS
 
- use ReForm;
+ # create form specification (form spec is common to all kinds of forms: HTML,
+ # Console, etc)
+
  my $i;
- my $form = {
+ my $form_spec = {
      name => 'Ask some personal information',
      fields => {
          first_name => {
@@ -95,30 +97,28 @@ sub list_field_names {
          },
      },
  };
- my $rf = ReForm->new(form => $form);
 
- # HTML
+ # HTML form
 
- my $rfhtml = $rf->get_renderer('HTML');
+ my $rf = ReForm::HTML->new(spec => $form_spec);
 
- ## get form data
- my $data   = $rfhtml->get_data(psgi_env => $env); # or cgi_obj => $q
+ ## get form data from PSGI env (or Plack request, or CGI object)
+ my $res = $rf->get_data(psgi_env => $env); # -> {first_name=>'...', ...}
+ my $data = $res->[2] if $res->[0] == 200;
 
- ## render form
- my $html   = $rfhtml->render();
+ ## render to HTML
+ say $rf->render; # -> '<form><input name=first_name>...'
 
- ## render form (prefilled with data)
- $html      = $rfhtml->render(data => $data);
+ ## render to HTML (prefill with data)
+ say $rf->render(data => $data);
 
- # console
+ # Console form
 
- my $rfconsole = $rf->get_renderer('Console');
+ $rf = ReForm::Console->new(spec => $form_spec):
 
- ## get form data
- my $data = $rfconsole->get_data();
-
- ## render form
- my $text = $rfconsole->render(data => $data);
+ ## render to STDOUT as well as get data from STDIN
+ $res = $rf->render();
+ $data = $res->[2] if $res->[0] == 200;
 
 
 =head1 DESCRIPTION
@@ -131,48 +131,40 @@ L<ReForm> is yet another form handling module/framework. Features:
 
 =item * Subforms
 
+=item * Multipage form
+
 =item * Translation
 
-=item * Multiple renderers: console, TUI (ncurses), HTML
+=item * Multiple renderers: HTML, Console, ncurses (planned), Wx (possible)
 
-=item * HTML renderer: CSS, AJAX, jQuery, Bootstrap, templates, multipage form
+=item * HTML renderer: CSS, AJAX, jQuery, Bootstrap, templates
 
 =back
 
 
 =head1 ATTRIBUTES
 
-=head2 form => HASH
+=head2 spec => HASH
 
 Form specification. See L</"FORM SPECIFICATION">.
-
-=head2 renderers => HASH
-
-A mapping of renderer name and objects, for caching.
 
 
 =head1 METHODS
 
 =head2 new(%args)
 
-Options:
+You can pass attributes to set them and any of the options below:
 
 =over
 
-=item * form_is_normalized => BOOL (default: 0)
+=item * spec_is_normalized => BOOL (default: 0)
 
-If set to 1, will assume form is already normalized and will not
+If set to 1, will assume form specification is already normalized and will not
 normalize it (e.g. normalize the schemas of form fields, etc).
 
 =back
 
-=head2 $rf->get_renderer($name) => OBJ
-
-Get renderer object (ReForm::Renderer::$name).
-
-=head2 $rf->list_field_names => LIST
-
-List form field names, sorted by position (C<pos>).
+=head2 $rf->render(%opts)
 
 
 =head1 FORM SPECIFICATION

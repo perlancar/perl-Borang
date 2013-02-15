@@ -1,4 +1,4 @@
-package ReForm::Renderer::HTML;
+package ReForm::HTML;
 
 use 5.010;
 use Moo;
@@ -86,7 +86,7 @@ sub get_data {
 }
 
 1;
-# ABSTRACT: Render form to HTML
+# ABSTRACT: HTML form
 
 =head1 SYNOPSIS
 
