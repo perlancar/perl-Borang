@@ -6,7 +6,7 @@ Revision history for Borang
 	  older DZP::Test::Compile (2.019 < x < 2.033).
 
 
-0.00     2013-10-03 (SHARYANTO)
+0.00    2013-10-03 (SHARYANTO)
 
-         - First release, empty (renamed from ReForm because the naming conflict
-           with a pragma module called 'reform').
+        - First release, empty (renamed from ReForm because the naming conflict
+          with a pragma module called 'reform').
