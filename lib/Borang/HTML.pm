@@ -88,6 +88,7 @@ sub _gen {
                     "</span>");
         $self->_push_line($r, "<span class=input_field>");
 
+        # pick widget to use
         if ($type eq 'bool') {
             # choice between radio or select yes/no
             $self->_push_line($r, "<input name=$fqname type=radio value=0".(!$val ? " checked":"")."> off ");
