@@ -44,6 +44,8 @@ sub _push_text {
 sub _gen {
     my ($self, $r, $meta, $values, $parent_args) = @_;
 
+    $r->{lparg} = {lang=>$parent_args->{lang}};
+
     $r->{prefix} //= "";
     if (!length($r->{prefix})) {
         my $form_name = $parent_args->{name};
@@ -82,7 +84,7 @@ sub _gen {
         $self->_indent($r);
         $self->_push_line(
             $r, "<span class=input_summary>".
-                encode_entities(risub($argspec)->langprop('summary') // '').
+                encode_entities(risub($argspec)->langprop('summary', $r->{lparg}) // '').
                     "</span>");
         $self->_push_line($r, "<span class=input_field>");
 
@@ -138,6 +140,10 @@ $SPEC{gen_html_form} = {
         },
         action => {
             summary => "HTML form action",
+            schema => ['str*'],
+        },
+        lang => {
+            summary => "Language",
             schema => ['str*'],
         },
     },
