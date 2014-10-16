@@ -5,6 +5,7 @@ use strict;
 use warnings;
 
 use HTML::Entities;
+use Perinci::Object;
 use Perinci::Sub::Normalize qw(normalize_function_metadata);
 use Perinci::Sub::Util::Sort qw(sort_args);
 use Text::Markdown qw(markdown);
@@ -47,7 +48,15 @@ sub _gen {
     if (!length($r->{prefix})) {
         my $form_name = $parent_args->{name};
         $self->_push_line(
-            $r, "<form". (defined($form_name) ? " name=$form_name":"").">");
+            $r,
+            join("",
+                 "<form",
+                 (defined($form_name) ? " name=$form_name":""),
+                 (defined($parent_args->{action}) ? qq[ action="$parent_args->{action}"]:""),
+                 (defined($parent_args->{method}) ? qq[ method=$parent_args->{method}]:""),
+                 ">",
+             )
+        );
         $self->_indent($r);
     }
 
@@ -71,9 +80,10 @@ sub _gen {
         }
         $self->_push_line($r, "<div class=input>");
         $self->_indent($r);
-        $self->_push_line($r, "<span class=input_summary>".
-                              encode_entities($argspec->{summary} // '').
-                                  "</span>");
+        $self->_push_line(
+            $r, "<span class=input_summary>".
+                encode_entities(risub($argspec)->langprop('summary') // '').
+                    "</span>");
         $self->_push_line($r, "<span class=input_field>");
 
         if ($type eq 'bool') {
@@ -120,6 +130,15 @@ $SPEC{gen_html_form} = {
         name => {
             summary => "HTML form name, will set the <FORM>'s name attribute",
             schema => 'str*',
+        },
+        method => {
+            summary => "HTML form method",
+            schema => ['str*', in=>[qw/POST GET/]],
+            default => 'POST',
+        },
+        action => {
+            summary => "HTML form action",
+            schema => ['str*'],
         },
     },
     result_naked => 1,
