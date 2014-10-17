@@ -8,13 +8,17 @@ use HTML::Entities;
 use Perinci::Object;
 use Perinci::Sub::Normalize qw(normalize_function_metadata);
 use Perinci::Sub::Util::Sort qw(sort_args);
-use Text::Markdown qw(markdown);
 
 require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(gen_html_form);
 
 our %SPEC;
+
+sub _md2html {
+    require Text::Markdown;
+    Text::Markdown::markdown(shift);
+}
 
 sub _indent {
     my ($self, $r) = @_;
