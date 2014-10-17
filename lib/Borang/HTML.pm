@@ -4,13 +4,19 @@ use 5.010;
 use strict;
 use warnings;
 
+our @ISA;
+
+use Mo qw(build default);
+extends 'Borang::BaseEnv';
+
 use HTML::Entities;
+use Locale::TextDomain::UTF8 'Borang';
+use Locale::Tie qw($LANG);
 use Perinci::Object;
 use Perinci::Sub::Normalize qw(normalize_function_metadata);
-use Perinci::Sub::Util::Sort qw(sort_args);
 
 require Exporter;
-our @ISA = qw(Exporter);
+push @ISA, qw(Exporter);
 our @EXPORT_OK = qw(gen_html_form);
 
 our %SPEC;
@@ -20,94 +26,106 @@ sub _md2html {
     Text::Markdown::markdown(shift);
 }
 
-sub _indent {
+sub _elangprop {
+    my ($self, $r, $dh, $prop) = @_;
+    encode_entities(risub($dh)->langprop($prop, {lang=>$r->{gen_args}{lang}}));
+}
+
+sub _select_widget {
     my ($self, $r) = @_;
-    $r->{indent}++;
+
+    my $argspec   = $r->{argspec};
+    my $argschema = $r->{argschema};
+    my ($type, $clset) = @$argschema;
+
+    my $class; # widget class to use
+    my %cargs = (name=>$r->{argfqname}, value=>$r->{argvalue}); # arguments
+    $class = $argspec->{"form.widget"};
+    if ($class) {
+        die "Invalid widget name '$class'" unless $class =~ /\A\w+(::\w+)*\z/;
+    } elsif ($type eq 'bool') {
+        # XXX choice between radio or select yes/no
+        $class = 'Radio';
+        $cargs{radios} = [
+            {caption=>N__("off"), value=>0},
+            {caption=>N__("on"), value=>1},
+        ];
+    } else {
+        $class = "Text";
+    }
+
+    $class = "Borang::HTML::Widget::$class";
+    {
+        (my $classp = "$class.pm") =~ s!::!/!g;
+        require $classp;
+    }
+    $class->new(%cargs);
 }
 
-sub _unindent {
+sub hook_before_args {
     my ($self, $r) = @_;
-    $r->{indent}--;
-    die "BUG: negative indent" if $r->{indent} < 0;
-}
 
-sub _push_line {
-    my $self = shift;
-    my $r = shift;
-    $r->{res} //= "";
-    $r->{res} .= (("  ") x ($r->{indent}//0)) . "$_\n" for @_;
-}
-
-sub _push_text {
-    my $self = shift;
-    my $r = shift;
-    $r->{res} //= "";
-    $r->{res} .= join("", @_);
-}
-
-sub _gen {
-    my ($self, $r, $meta, $values, $parent_args) = @_;
-
-    $r->{lparg} = {lang=>$parent_args->{lang}};
-
-    $r->{prefix} //= "";
+    my $gen_args  = $r->{gen_args};
     if (!length($r->{prefix})) {
-        my $form_name = $parent_args->{name};
         $self->_push_line(
             $r,
             join("",
                  "<form",
-                 (defined($form_name) ? " name=$form_name":""),
-                 (defined($parent_args->{action}) ? qq[ action="$parent_args->{action}"]:""),
-                 (defined($parent_args->{method}) ? qq[ method=$parent_args->{method}]:""),
+                 (defined($gen_args->{name}) ? " name=$gen_args->{name}":""),
+                 (defined($gen_args->{action}) ?
+                      qq[ action="$gen_args->{action}"]:""),
+                 (defined($gen_args->{method}) ?
+                      qq[ method=$gen_args->{method}]:""),
                  ">",
              )
         );
         $self->_indent($r);
     }
+}
 
-    my $args = $meta->{args} // {};
-    for my $argname (sort_args $args) {
-        my $fqname = "$r->{prefix}$argname";
-        my $argspec = $args->{$argname};
-        my $sch = $argspec->{schema} // ['str',{}];
-        my ($type, $cl) = ($sch->[0], $sch->[1]);
-        my $val = $values->{$argname} // $argspec->{default} //
-            $sch->[1]{default};
-        if ($argspec->{meta}) {
-            $self->_push_line($r, "<div class=subform>");
-            $self->_indent($r);
-            local $r->{prefix} = ($r->{prefix} ? "$r->{prefix}/":"").
-                "$argname/";
-            $self->_gen($r, $argspec->{meta}, $val, $parent_args);
-            $self->_unindent($r);
-            $self->_push_line($r, "</div><!--subform-->");
-            next;
-        }
-        $self->_push_line($r, "<div class=input>");
-        $self->_indent($r);
-        $self->_push_line(
-            $r, "<span class=input_summary>".
-                encode_entities(risub($argspec)->langprop('summary', $r->{lparg}) // '').
-                    "</span>");
-        $self->_push_line($r, "<span class=input_field>");
+sub hook_before_submeta {
+    my ($self, $r) = @_;
+    $self->_push_line($r, "<div class=subform>");
+    $self->_indent($r);
+}
 
-        # pick widget to use
-        if ($type eq 'bool') {
-            # choice between radio or select yes/no
-            $self->_push_line($r, "<input name=$fqname type=radio value=0".(!$val ? " checked":"")."> off ");
-            $self->_push_line($r, "<input name=$fqname type=radio value=1".( $val ? " checked":"")."> on ");
-        } else {
-            $self->_push_line($r, "<input name=$fqname".
-                                  (defined($val) ? ' value="'.encode_entities($val).'"':'').">");
-        }
+sub hook_after_submeta {
+    my ($self, $r) = @_;
+    $self->_unindent($r);
+    $self->_push_line($r, "</div><!--subform-->");
+}
 
-        $self->_push_line($r, "</span>");
-        $self->_unindent($r);
-        $self->_push_line($r, "</div><!--input-->");
+sub hook_before_arg {
+    my ($self, $r) = @_;
+    $self->_push_line($r, "<div class=input>");
+    $self->_push_line(
+        $r,
+        "<span class=input_summary>".
+            ($self->_elangprop($r, $r->{argspec}, 'summary') // '').
+                "</span>");
+    $self->_push_line($r, "<span class=input_field>");
+    $self->_indent($r);
+}
 
+sub hook_process_arg {
+    my ($self, $r) = @_;
+    my $widget = $self->_select_widget($r);
+    $self->_push_line($r, $widget->to_html);
+    # XXX if should create confirm field
+    if (0) {
+        $self->hook_process_arg($r);
     }
+}
 
+sub hook_after_arg {
+    my ($self, $r) = @_;
+    $self->_push_line($r, "</span>");
+    $self->_unindent($r);
+    $self->_push_line($r, "</div><!--input-->");
+}
+
+sub hook_after_args {
+    my ($self, $r) = @_;
     if (!length($r->{prefix})) {
         $self->_push_line($r, "<div class=input>");
         $self->_push_line($r, "  <span class=input_summary></span>");
@@ -162,9 +180,16 @@ sub gen_html_form {
 
     $meta = normalize_function_metadata($meta) unless $args{meta_is_normalized};
 
-    my $r = {};
-    my $self = bless {}, __PACKAGE__;
-    $self->_gen($r, $meta, $values, \%args);
+    local $LANG = $args{lang} if $args{lang};
+
+    my $r = {
+        gen_args => \%args,
+        meta     => $meta,
+        values   => $values,
+        prefix   => '',
+    };
+    my $self = __PACKAGE__->new;
+    $self->_gen($r);
 
     my $css = <<'_';
 <style>
@@ -191,3 +216,48 @@ _
 # ABSTRACT: Generate HTML form from Rinci metadata
 
 =for Pod::Coverage ^()$
+
+=head1 INTERNAL RECORD ($r)
+
+It is a hash/stash that gets passed around during form generation. The following
+are the keys that get set, sorted by the order of setting during form generation
+process.
+
+=head2 gen_args => hash
+
+Arguments passed to C<gen_html_form()>.
+
+=head2 meta => hash
+
+=head2 values => hash
+
+=head2 prefix => str
+
+Prefix, should be C<''> (empty string), unless when processing subforms
+(argument submetadata) in which is it will be a slash-separated string.
+
+=head2 argname => str
+
+Current argument name that is being processed.
+
+=head2 argfqname => str
+
+Like C<argname>, but fully qualified (e.g. C<a/b> if <b> is a subargument of
+C<a>). Provided for convenience. Can also be calculated from C<prefix> and
+C<argname>.
+
+=head2 argvalue => any
+
+Current argument's value. Provided for convenience. This is taken from
+C<values>, or argument specification's C<default>, or schema's C<default>.
+
+=head2 argspec => array
+
+Current argument's specification. Provided for convenience. Can also be
+retrieved via C<< meta->{args}{$argname} >>.
+
+=head2 argschema => array
+
+Current argument's schema. Provided for convenience. Can also be retrieved via
+C<< argspec->{schema} >>.
+

@@ -16,7 +16,7 @@ Borang is a form framework that is function-oriented (and not object-oriented,
 on purpose). In Borang, form submission is eventually sent to a function and
 vice versa form is generated from L<Rinci> function metadata.
 
-Borang is environment-agnostic (can generate HTML forms as well as CLI/CUI/GUI).
+Borang is environment-agnostic (can target HTML forms as well as CLI/CUI/GUI).
 
 
 =head1 FAQ
