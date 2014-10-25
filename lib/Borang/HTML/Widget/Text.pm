@@ -26,6 +26,7 @@ sub to_html {
     join(
         "",
         "<input name=", $self->name,
+        (defined($self->size) ? " size=".$self->size : ""),
         (" type=password") x !!$self->mask,
         (" value=\"", encode_entities($value), "\"") x !!defined($value),
         ">",
@@ -42,4 +43,3 @@ sub to_html {
 =head2 mask => bool
 
 Whether to mask text being entered (e.g. for password entry)
-

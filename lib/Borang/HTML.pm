@@ -53,6 +53,13 @@ sub _select_widget {
             {caption=>N__("off"), value=>0},
             {caption=>N__("on"), value=>1},
         ];
+    } elsif ($type =~ /^(str|cistr|buf)$/) {
+        $class = "Text";
+        if ($clset->{max_len}) {
+            $cargs{size} = $clset->{max_len};
+            $cargs{size} =  3 if $cargs{size} <  3;
+            $cargs{size} = 80 if $cargs{size} > 80;
+        }
     } else {
         $class = "Text";
     }
@@ -263,4 +270,3 @@ retrieved via C<< meta->{args}{$argname} >>.
 
 Current argument's schema. Provided for convenience. Can also be retrieved via
 C<< argspec->{schema} >>.
-
