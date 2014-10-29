@@ -41,7 +41,7 @@ sub _push_text {
 
 sub _langprop {
     my ($self, $r, $dh, $prop) = @_;
-    risub($dh)->langprop($prop, {lang=>$r->{gen_args}{lang}});
+    risub($dh)->langprop({lang=>$r->{gen_args}{lang}}, $prop);
 }
 
 sub _gen {

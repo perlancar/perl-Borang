@@ -31,7 +31,7 @@ sub _md2html {
 
 sub _elangprop {
     my ($self, $r, $dh, $prop) = @_;
-    encode_entities(risub($dh)->langprop($prop, {lang=>$r->{gen_args}{lang}}));
+    encode_entities(risub($dh)->langprop({lang=>$r->{gen_args}{lang}}, $prop));
 }
 
 sub _select_widget {
