@@ -151,6 +151,7 @@ sub hook_after_args {
 
 $SPEC{gen_html_form} = {
     v => 1.1,
+    summary => 'Generate HTML form from Rinci metadata',
     args => {
         meta => {
             schema => 'hash*',
@@ -223,7 +224,7 @@ _
 # - option to show description or show as bubble text
 
 1;
-# ABSTRACT: Generate HTML form from Rinci metadata
+# ABSTRACT:
 
 =for Pod::Coverage ^()$
 
