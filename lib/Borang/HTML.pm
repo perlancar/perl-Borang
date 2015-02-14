@@ -110,10 +110,14 @@ sub hook_before_arg {
     $self->_push_line($r, "<div class=input>");
     $self->_push_line(
         $r,
-        "<span class=input_caption>".
-            ($self->_elangprop($r, $r->{argspec}, 'caption') //
-                 $self->_elangprop($r, $r->{argspec}, 'summary') // '').
-                     "</span>");
+        join('',
+             "<span class=input_caption>",
+             ($self->_elangprop($r, $r->{argspec}, 'caption') //
+                  $self->_elangprop($r, $r->{argspec}, 'summary') //
+                      $r->{argname}),
+             "</span>",
+         )
+    );
     $self->_push_line($r, "<span class=input_field>");
     $self->_indent($r);
 }
