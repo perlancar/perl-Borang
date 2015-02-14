@@ -110,9 +110,10 @@ sub hook_before_arg {
     $self->_push_line($r, "<div class=input>");
     $self->_push_line(
         $r,
-        "<span class=input_summary>".
-            ($self->_elangprop($r, $r->{argspec}, 'summary') // '').
-                "</span>");
+        "<span class=input_caption>".
+            ($self->_elangprop($r, $r->{argspec}, 'caption') //
+                 $self->_elangprop($r, $r->{argspec}, 'summary') // '').
+                     "</span>");
     $self->_push_line($r, "<span class=input_field>");
     $self->_indent($r);
 }
@@ -138,7 +139,7 @@ sub hook_after_args {
     my ($self, $r) = @_;
     if (!length($r->{prefix})) {
         $self->_push_line($r, "<div class=input>");
-        $self->_push_line($r, "  <span class=input_summary></span>");
+        $self->_push_line($r, "  <span class=input_caption></span>");
         $self->_push_line($r, "  <span class=input_field>");
         $self->_push_line($r, "    <input type=submit>");
         $self->_push_line($r, "  </span>");
@@ -206,7 +207,7 @@ sub gen_html_form {
 <style>
   form           { display: table }
   .input         { display: table-row }
-  .input_summary { display: table-cell; padding: 10px; width: 50% }
+  .input_caption { display: table-cell; padding: 10px; width: 50% }
   .input_field   { display: table-cell}
   .subform       { padding: 10px }
 </style>
