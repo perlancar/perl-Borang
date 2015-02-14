@@ -109,7 +109,8 @@ sub _select_widget {
     }
 
     if ($class eq 'Text') {
-        $cargs{mask} //= 1 if $r->{argspec}{is_password};
+        $cargs{mask} //= 1 if $r->{argspec}{is_password} ||
+            $r->{argname} =~ /password/i;
     }
 
     $class = "Borang::HTML::Widget::$class";
