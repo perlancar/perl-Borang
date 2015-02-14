@@ -13,6 +13,7 @@ use Mo qw(build default);
 extends 'Borang::BaseEnv';
 
 use HTML::Entities;
+use List::Util qw(first max min);
 use Locale::TextDomain::UTF8 'Borang';
 use Locale::Tie qw($LANG);
 use Perinci::Object;
@@ -55,11 +56,37 @@ sub _select_widget {
         ];
     } elsif ($type =~ /^(str|cistr|buf)$/) {
         $class = "Text";
-        if ($clset->{max_len}) {
-            $cargs{size} = $clset->{max_len};
+        my $len_hint = first {defined} (
+            $clset->{max_len},
+            ($clset->{len_between} ? $clset->{len_between}[1] : undef),
+            $clset->{min_len},
+            (defined($clset->{default}) ? length($clset->{default}) : undef),
+        );
+        if (defined $len_hint) {
+            $cargs{size} = $len_hint;
             $cargs{size} =  3 if $cargs{size} <  3;
             $cargs{size} = 80 if $cargs{size} > 80;
         }
+    } elsif ($type =~ /^(int|float|num)$/) {
+        $class = "Text";
+        my $max = max(
+            map {abs($_)} (
+                grep {defined} (
+                    $clset->{min},
+                    $clset->{xmin},
+                    $clset->{max},
+                    $clset->{xmax},
+                    ($clset->{between}  ? $clset->{between}[0]  : undef),
+                    ($clset->{between}  ? $clset->{between}[1]  : undef),
+                    ($clset->{xbetween} ? $clset->{xbetween}[0] : undef),
+                    ($clset->{xbetween} ? $clset->{xbetween}[1] : undef),
+                    $clset->{default},
+                )
+            ));
+        my $size = 5;
+        $size = log($max)/log(10) if defined($max) && $max > 0;
+        $size = 3 if $size < 3;
+        $cargs{size} = $size;
     } else {
         $class = "Text";
     }
