@@ -91,6 +91,10 @@ sub _select_widget {
         $class = "Text";
     }
 
+    if ($class eq 'Text') {
+        $cargs{mask} //= 1 if $r->{argspec}{is_password};
+    }
+
     $class = "Borang::HTML::Widget::$class";
     {
         (my $classp = "$class.pm") =~ s!::!/!g;
