@@ -13,6 +13,7 @@ use Mo qw(build default);
 extends 'Borang::HTML::Widget';
 
 has size => (is => 'rw');
+has max_len => (is => 'rw');
 has mask => (is => 'rw');
 
 # TODO: Mask can be a format pattern, e.g.: "##.##.##" This will result in 3
@@ -27,6 +28,7 @@ sub to_html {
         "",
         "<input name=", $self->name,
         (defined($self->size) ? " size=".$self->size : ""),
+        (defined($self->max_len) ? " maxlength=".$self->max_len : ""),
         (" type=password") x !!$self->mask,
         (" value=\"", encode_entities($value), "\"") x !!defined($value),
         ">",

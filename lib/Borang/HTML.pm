@@ -55,19 +55,27 @@ sub _select_widget {
             {caption=>N__("on"), value=>1},
         ];
     } elsif ($type =~ /^(str|cistr|buf)$/) {
+
         $class = "Text";
-        my $len_hint = first {defined} (
+        my $size_hint = first {defined} (
             $clset->{max_len},
             ($clset->{len_between} ? $clset->{len_between}[1] : undef),
             $clset->{min_len},
             (defined($clset->{default}) ? length($clset->{default}) : undef),
         );
-        if (defined $len_hint) {
-            $cargs{size} = $len_hint;
+        if (defined $size_hint) {
+            $cargs{size} = $size_hint;
             $cargs{size} =  3 if $cargs{size} <  3;
             $cargs{size} = 80 if $cargs{size} > 80;
         }
+        if (defined $clset->{max_len}) {
+            $cargs{max_len} = $clset->{max_len};
+        } elsif (defined $clset->{len_between}) {
+            $cargs{max_len} = $clset->{len_between}[1];
+        }
+
     } elsif ($type =~ /^(int|float|num)$/) {
+
         $class = "Text";
         my $max = max(
             map {abs($_)} (
@@ -83,10 +91,19 @@ sub _select_widget {
                     $clset->{default},
                 )
             ));
-        my $size = 5;
-        $size = log($max)/log(10) if defined($max) && $max > 0;
-        $size = 3 if $size < 3;
-        $cargs{size} = $size;
+        my $magnitude = log($max)/log(10) if defined($max) && $max > 0;
+        if (defined $magnitude) {
+            $cargs{size} = $magnitude;
+            $cargs{size} = 3 if $cargs{size} < 3;
+        }
+        if ($type eq 'int') {
+            # just enough to type "-" and the number
+            $cargs{max_len} = $magnitude+1 if defined $magnitude;
+        } elsif ($type eq 'float') {
+            # just enough to type "-", integer number, ".", and some digits
+            $cargs{max_len} = $magnitude+12 if defined $magnitude;
+        }
+
     } else {
         $class = "Text";
     }
