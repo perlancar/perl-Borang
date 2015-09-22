@@ -6,22 +6,23 @@ package Borang;
 use 5.010001;
 
 1;
-# ABSTRACT: Rinci-based form framework
+# ABSTRACT: Function-oriented form framework
 
 =head1 DESCRIPTION
 
-B<WORK IN PROGRESS, SOME THINGS ARE NOT YET IMPLEMENTED>.
+B<EARLY RELEASE, WORK IN PROGRESS, MANY THINGS ARE NOT YET IMPLEMENTED>.
 
-Borang is a form framework that is function-oriented (and not object-oriented,
-on purpose). In Borang, form submission is eventually sent to a function and
-vice versa form is generated from L<Rinci> function metadata.
+Borang is a function-oriented form framework. Borang can generate forms using
+information from L<Rinci> function metadata. After you fill out and submit a
+form, the form submission will be converted into function arguments and sent to
+the function via function call.
 
-Borang is environment-agnostic (can target HTML forms as well as CLI/CUI/GUI).
+Borang is environment-agnostic: it can target HTML forms as well as CLI/CUI/GUI.
 
 
 =head1 FAQ
 
-=head2 Why the name?
+=head2 What does "borang" mean?
 
 Borang means form in Indonesian and is currently seldom used in daily
 conversations.

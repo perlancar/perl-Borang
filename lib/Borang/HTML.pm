@@ -92,6 +92,7 @@ sub _select_widget {
                 )
             ));
         my $magnitude = log($max)/log(10) if defined($max) && $max > 0;
+
         if (defined $magnitude) {
             $cargs{size} = $magnitude;
             $cargs{size} = 3 if $cargs{size} < 3;
