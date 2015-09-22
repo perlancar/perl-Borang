@@ -17,6 +17,7 @@ my $res = gen_html_form(
                 schema => 'int',
                 pos => 0,
             },
+
             # field length can be guessed from schema (max, min, xmax, xmin,
             # between, xbetween, or default value)
             num2 => {
@@ -29,11 +30,12 @@ my $res = gen_html_form(
                 summary => 'A text field',
                 pos => 2,
             },
+
             # field length can be guessed from schema (max_len, min_len,
             # len_between, or default value)
             text2 => {
                 summary => 'A longer text field (hint from schema)',
-                caption => 'A longer text fieldd',
+                caption => 'A longer text field',
                 schema  => ['str*', max_len=>100],
                 pos => 3,
             },
