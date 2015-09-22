@@ -39,6 +39,8 @@ sub to_html {
 1;
 # ABSTRACT: Radio group input widget
 
+=for Pod::Coverage .+
+
 =head1 ATTRIBUTES
 
 =head2 radios => array*
@@ -50,5 +52,3 @@ A list of radio items. Example:
 Another example:
 
  [{caption=>"on", value=>1}, {caption=>"off", value=>0}]
-
-

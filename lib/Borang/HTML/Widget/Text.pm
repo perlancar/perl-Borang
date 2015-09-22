@@ -38,6 +38,8 @@ sub to_html {
 1;
 # ABSTRACT: Text input widget
 
+=for Pod::Coverage .+
+
 =head1 ATTRIBUTES
 
 =head2 size => int
