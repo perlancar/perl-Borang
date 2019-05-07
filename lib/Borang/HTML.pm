@@ -3,7 +3,7 @@ package Borang::HTML;
 # DATE
 # VERSION
 
-use 5.010;
+use 5.010001;
 use strict;
 use warnings;
 
@@ -140,6 +140,15 @@ sub hook_before_args {
              )
         );
         $self->_indent($r);
+        for my $var (@{ $gen_args->{additional_hidden_vars} // [] }) {
+            $self->_push_line(
+                $r,
+                join("",
+                     "<input name=\"$var\" type=hidden value=\"",
+                     encode_entities($r->{values}{$var} // ""), "\">",
+                 ),
+            );
+        }
     }
 }
 
@@ -229,11 +238,30 @@ $SPEC{gen_html_form} = {
         },
         action => {
             summary => "HTML form action",
-            schema => ['str*'],
+            schema => ['str*'], # XXX url
+        },
+        additional_hidden_vars => {
+            summary => 'Additional form variables to send, '.
+                'in hidden input fields',
+            schema => ['array*', of=>'str*'],
+            description => <<'_',
+
+Pass additional form variable names to send in hidden input fields, if you need.
+The values will be taken from the `values` argument.
+
+_
         },
         lang => {
             summary => "Language",
             schema => ['str*'],
+            description => <<'_',
+
+This can be set to select:
+
+* the language of messages in Rinci/DefHash properties/attributes, if multiple
+  languages are provided.
+
+_
         },
     },
     result_naked => 1,
