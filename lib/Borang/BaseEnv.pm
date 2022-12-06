@@ -9,6 +9,7 @@ use warnings;
 
 use Mo qw(build default);
 
+use Hash::DefHash;
 use Perinci::Object;
 use Perinci::Sub::Util::Sort qw(sort_args);
 
@@ -62,6 +63,9 @@ sub _gen {
         local $r->{argvalue}  = $argvalue;
         local $r->{argspec}   = $argspec;
         local $r->{argschema} = $argschema;
+        local $r->{argschema_type}  = $argschema->[0];
+        local $r->{argschema_clset} = $argschema->[1];
+        local $r->{argschema_clset_dh} = defhash($argschema->[1]);
 
         if ($argspec->{meta}) {
             local $r->{prefix} =
@@ -96,47 +100,66 @@ This is the base class for:
  Borang::GUI
 
 
-=head1 INTERNAL RECORD ($r)
+=head1 INTERNAL RECORD
 
-It is a hash/stash that gets passed around during form generation. The following
-are the keys that get set, sorted by the order of setting during form generation
-process.
+Hash. Usually named C<$r>. It is a stash of name-value pairs that gets passed
+around during form generation. The following are the keys that get set, sorted
+by the order of setting during form generation process.
 
-=head2 gen_args => hash
+=head2 gen_args
 
-Arguments passed to C<gen_html_form()>.
+Hash. Arguments passed to C<gen_html_form()>.
 
-=head2 meta => hash
+=head2 meta
 
-=head2 values => hash
+Hash (DefHash).
 
-=head2 prefix => str
+=head2 values
 
-Prefix, should be C<''> (empty string), unless when processing subforms
+Hash.
+
+=head2 prefix
+
+Str. Prefix, should be C<''> (empty string), unless when processing subforms
 (argument submetadata) in which is it will be a slash-separated string.
 
-=head2 argname => str
+=head2 argname
 
-Current argument name that is being processed.
+Str. Current argument name that is being processed.
 
-=head2 argfqname => str
+=head2 argfqname
 
-Like C<argname>, but fully qualified (e.g. C<a/b> if <b> is a subargument of
-C<a>). Provided for convenience. Can also be calculated from C<prefix> and
+Str. Like C<argname>, but fully qualified (e.g. C<a/b> if <b> is a subargument
+of C<a>). Provided for convenience. Can also be calculated from C<prefix> and
 C<argname>.
 
-=head2 argvalue => any
+=head2 argvalue
 
-Current argument's value. Provided for convenience. This is taken from
+Any. Current argument's value. Provided for convenience. This is taken from
 C<values>, or argument specification's C<default>, or schema's C<default>.
 
-=head2 argspec => array
+=head2 argspec
 
-Current argument's specification. Provided for convenience. Can also be
+Array. Current argument's specification. Provided for convenience. Can also be
 retrieved via C<< meta->{args}{$argname} >>.
 
-=head2 argschema => array
+=head2 argschema
 
-Current argument's schema. Provided for convenience. Can also be retrieved via
-C<< argspec->{schema} >>.
+Array. Current argument's schema (normalized). Provided for convenience. Can
+also be retrieved via C<< argspec->{schema} >>.
 
+=head2 argschema_type
+
+Str. The type name of the current argument's schema, which is the first element
+of the C<argschema> array.
+
+=head2 argschema_clset
+
+Hash (DefHash). The clause set of the current argument's schema, which is the
+second element of the C<argschema> array.
+
+=head2 argschema_clset_dh
+
+Object. A L<Hash::DefHash> object instantiated from C<argschema_clset>.
+
+=cut

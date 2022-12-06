@@ -1,17 +1,20 @@
 package Borang::HTML::Widget;
 
-# DATE
-# VERSION
-
 use 5.010;
 use strict;
 use warnings;
+
+# AUTHORITY
+# DATE
+# DIST
+# VERSION
 
 use Mo qw(build default);
 
 #has form => (is => 'rw');
 has name => (is => 'rw');
 has value => (is => 'rw');
+has label => (is => 'rw');
 
 1;
 # ABSTRACT: Base class for HTML form widgets
@@ -24,5 +27,4 @@ Widget name.
 
 =head2 value => any
 
-The value that the widget stores.
-
+The current value that the widget stores.

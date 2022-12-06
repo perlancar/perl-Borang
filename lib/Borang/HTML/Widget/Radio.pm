@@ -1,8 +1,5 @@
 package Borang::HTML::Widget::Radio;
 
-# DATE
-# VERSION
-
 use 5.010;
 use strict;
 use warnings;
@@ -13,6 +10,11 @@ use Mo qw(build default);
 extends 'Borang::HTML::Widget';
 
 has radios => (is => 'rw');
+
+# AUTHORITY
+# DATE
+# DIST
+# VERSION
 
 sub to_html {
     my $self = shift;

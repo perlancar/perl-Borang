@@ -1,11 +1,13 @@
 package Borang::HTML;
 
-# DATE
-# VERSION
-
 use 5.010001;
 use strict;
 use warnings;
+
+# AUTHORITY
+# DATE
+# DIST
+# VERSION
 
 our @ISA;
 
@@ -30,11 +32,6 @@ sub _md2html {
     Text::Markdown::markdown(shift);
 }
 
-sub _elangprop {
-    my ($self, $r, $dh, $prop) = @_;
-    encode_entities(risub($dh)->langprop({lang=>$r->{gen_args}{lang}}, $prop));
-}
-
 sub _select_widget {
     my ($self, $r) = @_;
 
@@ -43,7 +40,16 @@ sub _select_widget {
     my ($type, $clset) = @$argschema;
 
     my $class; # widget class to use
-    my %cargs = (name=>$r->{argfqname}, value=>$r->{argvalue}); # arguments
+    my $label =
+        $clset->{'caption.alt.env.web'} //
+        $clset->{'caption'} //
+        $clset->{'summary.alt.env.web'} //
+        $clset->{'summary'};
+    my %cargs = (
+        name => $r->{argfqname},
+        value => $r->{argvalue} // $clset->{default},
+        label => $label,
+    ); # class arguments
     $class = $argspec->{"form.widget"};
     if ($class) {
         die "Invalid widget name '$class'" unless $class =~ /\A\w+(::\w+)*\z/;
@@ -55,6 +61,12 @@ sub _select_widget {
             {caption=>N__("on"), value=>1},
         ];
     } elsif ($type =~ /^(str|cistr|buf)$/) {
+
+        if ($clset->{in}) {
+            $class = "Select";
+            $cargs{options} = $clset->{in};
+            goto INSTANTIATE_WIDGET;
+        }
 
         $class = "Text";
         my $size_hint = first {defined} (
@@ -114,6 +126,7 @@ sub _select_widget {
             $r->{argname} =~ /password/i;
     }
 
+  INSTANTIATE_WIDGET:
     $class = "Borang::HTML::Widget::$class";
     {
         (my $classp = "$class.pm") =~ s!::!/!g;
@@ -166,15 +179,19 @@ sub hook_after_submeta {
 
 sub hook_before_arg {
     my ($self, $r) = @_;
+
+    my $label =
+        $r->{argschema_clset_dh}->langprop('caption', {alt=>[{env=>"web"}], die=>0}) //
+        $r->{argschema_clset_dh}->langprop('summary', {alt=>[{env=>"web"}], die=>0}) //
+        $r->{argname};
+
     $self->_push_line($r, "<div class=input>");
     $self->_push_line(
         $r,
         join('',
-             "<span class=input_caption>",
-             ($self->_elangprop($r, $r->{argspec}, 'caption') //
-                  $self->_elangprop($r, $r->{argspec}, 'summary') //
-                      $r->{argname}),
-             "</span>",
+             "<span class=input_caption><label for=", $r->{argfqname}, ">",
+             encode_entities($label),
+             "</label></span>",
          )
     );
     $self->_push_line($r, "<span class=input_field>");
